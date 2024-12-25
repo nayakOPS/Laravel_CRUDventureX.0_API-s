@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->enum('status', ['pending', 'completed'])->default('pending');
-            // singular project_id
-            $table->foreignId('projects_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            // Corrected column name to 'project_id' (singular)
+            $table->foreignId('project_id')->constrained()->onUpdate('cascade')->onDelete('cascade'); // Changed 'projects_id' to 'project_id'
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

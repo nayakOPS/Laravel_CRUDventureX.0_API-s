@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -44,14 +45,34 @@ class AuthController extends Controller
     // Log out user (revoke token)
     public function logout(Request $request)
     {
-         // Revoke all tokens..
-         $request -> user() -> tokens() -> delete();
+        // Check if the user is authenticated
+        if (!$request->user()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
 
-         // Revoke the current token
-         $request -> user() -> currentAccessToken() -> delete();
+        // Revoke all tokens..
+        $request->user()->tokens()->delete();
 
-         return response()->json([
-             'message' => 'You have been successfully logged out'
-         ],200);
+        // Revoke the current token
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'You have been successfully logged out'
+        ], 200);
     }
+
+
+     // Send password reset link
+     public function sendPasswordResetLink(Request $request)
+     {
+         $request->validate(['email' => 'required|email']);
+
+         $status = Password::sendResetLink(
+             $request->only('email')
+         );
+
+         return $status === Password::RESET_LINK_SENT
+             ? response()->json(['message' => 'We have emailed your password reset link!'], 200)
+             : response()->json(['error' => 'Unable to send reset link.'], 500);
+     }
 }
